@@ -45,7 +45,7 @@ function Formulaire() {
 
   return (
     <div>
-      <h2>Formulaire de Coordonnées</h2>
+      <h2>Entrez vos données</h2>
       <form onSubmit={handleSubmit}>
         {coordonnees.map(({ nom, coordonnee }, index) => (
           <div key={index}>
@@ -74,7 +74,15 @@ function Formulaire() {
         <div>
           <h3>Trajet le plus court :</h3>
           <p>
-            {trajetPlusCourt.join(" -> ")} -&gt;{" "}
+            {trajetPlusCourt.map((etape, index) => (
+              <span key={index}>
+                {etape.coordonnee} ({etape.by}){" "}
+                {/* Affiche la coordonnée et le mode de transport */}
+                {index < trajetPlusCourt.length - 1 && " -> "}{" "}
+                {/* Affiche la flèche seulement entre les étapes */}
+              </span>
+            ))}{" "}
+            -&gt;{" "}
             {
               coordonnees.find((coordonnee) => coordonnee.nom === "Arrivée")
                 .coordonnee
