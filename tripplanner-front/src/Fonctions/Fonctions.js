@@ -1,7 +1,28 @@
 export function requeteAPIDriving(coorDepart, coorArrivee) {
-  //Requete API drive
   const apiUrl =
     "http://127.0.0.1:5000/route/v1/driving/" +
+    coorDepart +
+    ";" +
+    coorArrivee +
+    "?steps=true";
+  return fetch(apiUrl)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      return data;
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
+}
+
+export function requeteAPIWalking(coorDepart, coorArrivee) {
+  const apiUrl =
+    "http://127.0.0.1:5000/route/v1/walking/" +
     coorDepart +
     ";" +
     coorArrivee +
@@ -24,35 +45,51 @@ export function requeteAPIDriving(coorDepart, coorArrivee) {
 export function calculDureeVoiture(coorDepart, coorArrivee) {
   return requeteAPIDriving(coorDepart, coorArrivee)
     .then((data) => {
-      return data.routes[0].duration; //Calcul distance
+      return data.routes[0].duration;
     })
     .catch((error) => {
       console.error("Error:", error);
     });
 }
 
-export async function calculRoute() {
-  //tab = tableau des coordonnées des sites
-  //Calculer du départ aux sites pour déterminer le premier site
-  var tab = ["13.388860,52.517037", "13.385983,52.496891"];
-  var tabTemps = [];
-  tabTemps[0] = 0;
-  //traiter cas particulier de taille = 2 ou 3
-  for (let i = 1; i < tab.length - 2; i++) {
-    //-2
-    tabTemps[i] = calculDureeVoiture(tab[0], tab[i]);
-  }
-  var indexPlusCourt = trouverIndexPlusCourtTemps(tabTemps);
-  alert(indexPlusCourt);
+export function calculDureePied(coorDepart, coorArrivee) {
+  return requeteAPIWalking(coorDepart, coorArrivee)
+    .then((data) => {
+      return data.routes[0].duration;
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
 }
 
-export function trouverIndexPlusCourtTemps(tab) {
-  var index = 1;
-  var resultat = tab[index];
-  for (let i = 1; i < tab.length; i++) {
-    if (tab[i] < resultat) {
-      index = i;
+export async function calculRoute(tab) {
+  const trajetPlusCourt = [tab[0]]; 
+  let coordonneeDepart = tab[0]; 
+
+  // Tant qu'il reste des coordonnées à visiter
+  while (trajetPlusCourt.length < tab.length) {
+    // Calculer les temps de trajet pour chaque coordonnée par rapport à la coordonnée de départ
+    const tempsTrajets = [];
+    for (let i = 1; i < tab.length; i++) {
+      if (!trajetPlusCourt.includes(tab[i])) {
+        // Ne pas inclure les coordonnées déjà visitées
+        const tempsTrajetVoiture = await calculDureeVoiture(coordonneeDepart, tab[i]);
+        tempsTrajets.push({ index: i, temps: tempsTrajetVoiture, by: "voiture" });
+      }
     }
+
+    // Trouver la coordonnée la plus proche (temps de trajet le plus court)
+    tempsTrajets.sort((a, b) => a.temps - b.temps); // Trier par temps de trajet croissant
+    const prochaineCoordonneeIndex = tempsTrajets[0].index;
+    const prochaineCoordonnee = tab[prochaineCoordonneeIndex];
+
+    // Ajouter la coordonnée la plus proche au voyage organisé
+    trajetPlusCourt.push(prochaineCoordonnee);
+
+    // Mettre à jour la coordonnée de départ pour la prochaine itération
+    coordonneeDepart = prochaineCoordonnee;
   }
-  return index;
+
+  return trajetPlusCourt;
 }
+

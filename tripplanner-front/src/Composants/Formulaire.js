@@ -3,61 +3,86 @@ import "../Fonctions/Fonctions";
 import { calculRoute } from "../Fonctions/Fonctions";
 
 function Formulaire() {
-  // États pour stocker les valeurs sélectionnées
-  const [option1, setOption1] = useState("");
-  const [option2, setOption2] = useState("");
-  const [option3, setOption3] = useState("");
+  // État local pour stocker les coordonnées entrées par l'utilisateur
+  const [coordonnees, setCoordonnees] = useState([
+    { nom: "Départ", coordonnee: "" },
+    { nom: "Arrivée", coordonnee: "" },
+  ]); // État local pour garder une trace du nombre de sites ajoutés
+  const [nombreSites, setNombreSites] = useState(0);
+  const [trajetPlusCourt, setTrajetPlusCourt] = useState([]); // État local pour stocker le trajet le plus court
 
-  // Fonction pour gérer le changement de valeur de la première liste déroulante
-  const handleOption1Change = (event) => {
-    setOption1(event.target.value);
+  // Fonction appelée lorsqu'un champ de formulaire est modifié
+  const handleChange = (e, index) => {
+    const newCoordonnees = [...coordonnees];
+    newCoordonnees[index].coordonnee = e.target.value;
+    setCoordonnees(newCoordonnees);
   };
 
-  // Fonction pour gérer le changement de valeur de la deuxième liste déroulante
-  const handleOption2Change = (event) => {
-    setOption2(event.target.value);
+  // Fonction appelée lorsque le formulaire est soumis
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    // Appel de la fonction calculRoute avec les coordonnées entrées par l'utilisateur
+    const trajet = await calculRoute(
+      coordonnees
+        .filter((coordonnee) => coordonnee.nom !== "Arrivée")
+        .map(({ coordonnee }) => coordonnee)
+    );
+    setTrajetPlusCourt(trajet);
   };
 
-  // Fonction pour gérer le changement de valeur de la troisième liste déroulante
-  const handleOption3Change = (event) => {
-    setOption3(event.target.value);
+  // Fonction pour ajouter un champ de formulaire pour un nouveau site
+  const handleAddSite = () => {
+    const newNombreSites = nombreSites + 1;
+    // Insérer le nouveau site entre "Départ" et "Arrivée"
+    const updatedCoordonnees = [
+      ...coordonnees.slice(0, -1), // "Départ" et sites ajoutés dynamiquement
+      { nom: `Site ${newNombreSites}`, coordonnee: "" },
+      ...coordonnees.slice(-1), // "Arrivée"
+    ];
+    setCoordonnees(updatedCoordonnees);
+    setNombreSites(newNombreSites);
   };
-
 
   return (
-    <form onSubmit={calculRoute}>
-      <div>
-        <label>
-          Option 1 :
-          <select value={option1} onChange={handleOption1Change}>
-            <option value="">Sélectionnez une option</option>
-            <option value="13.388860,52.517037">13.388860,52.517037</option>
-            <option value="option1B">Option 1B</option>
-          </select>
-        </label>
-      </div>
-      <div>
-        <label>
-          Option 2 :
-          <select value={option2} onChange={handleOption2Change}>
-            <option value="">Sélectionnez une option</option>
-            <option value="13.385983,52.496891">13.385983,52.496891</option>
-            <option value="option2B">Option 2B</option>
-          </select>
-        </label>
-      </div>
-      <div>
-        <label>
-          Option 3 :
-          <select value={option3} onChange={handleOption3Change}>
-            <option value="">Sélectionnez une option</option>
-            <option value="13.385983,52.496891">13.385983,52.496891</option>
-            <option value="option3B">Option 3B</option>
-          </select>
-        </label>
-      </div>
-      <button type="submit">Soumettre</button>
-    </form>
+    <div>
+      <h2>Formulaire de Coordonnées</h2>
+      <form onSubmit={handleSubmit}>
+        {coordonnees.map(({ nom, coordonnee }, index) => (
+          <div key={index}>
+            <label>{`${nom}:`}</label>
+            <select value={coordonnee} onChange={(e) => handleChange(e, index)}>
+              <option value="13.40400,52.522000">
+                Classik Alexander Plaza Hotel
+              </option>
+              <option value="13.24359,52.281499">Aeroport</option>
+              <option value="13.377957,52.516267">Porte de Brandebourg</option>
+              <option value="13.401078,52.519061">Berliner Dom</option>
+              <option value="13.409419,52.520817">Fernsehturm Berlin</option>
+              <option value="13.48583139,52.508664632">
+                Musée de la Stasi
+              </option>
+            </select>
+          </div>
+        ))}
+        <button type="button" onClick={handleAddSite}>
+          Plus
+        </button>
+        <button type="submit">Envoyer</button>
+      </form>
+      {/* Affichage du trajet le plus court */}
+      {trajetPlusCourt.length > 0 && (
+        <div>
+          <h3>Trajet le plus court :</h3>
+          <p>
+            {trajetPlusCourt.join(" -> ")} -&gt;{" "}
+            {
+              coordonnees.find((coordonnee) => coordonnee.nom === "Arrivée")
+                .coordonnee
+            }
+          </p>
+        </div>
+      )}
+    </div>
   );
 }
 
