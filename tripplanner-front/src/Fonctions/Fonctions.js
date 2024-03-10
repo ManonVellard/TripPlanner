@@ -80,11 +80,15 @@ export async function calculRoute(tab) {
         tempsTrajetsVoiture.push({
           index: i,
           temps: tempsTrajetVoiture,
-          by: "voiture",
+          by: "en voiture",
         });
 
         const tempsTrajetPied = await calculDureePied(coordonneeDepart, tab[i]);
-        tempsTrajetsPied.push({ index: i, temps: tempsTrajetPied, by: "pied" });
+        tempsTrajetsPied.push({
+          index: i,
+          temps: tempsTrajetPied,
+          by: "à pied",
+        });
       }
     }
     //Comparer les meilleurs trajets (voiture ou à pied) et les mettre dans tempsTrajet
