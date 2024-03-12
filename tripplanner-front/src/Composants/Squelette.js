@@ -13,11 +13,11 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import AccountCircle from "@mui/icons-material/AccountCircle";
-import MenuItem from "@mui/material/MenuItem";
-import Menu from "@mui/material/Menu";
 import Accueil from "../Pages/Accueil";
 import AjouterVoyage from "../Pages/AjouterVoyage";
 import Voyages from "../Pages/Voyages";
+import InputBase from "@mui/material/InputBase";
+import SearchIcon from "@mui/icons-material/Search";
 
 export function BottomBar() {
   const [value, setValue] = React.useState("acceuil");
@@ -43,7 +43,6 @@ export function BottomBar() {
           icon={<AddCircleIcon sx={{ fontSize: "50px", color: "red" }} />}
           component={Link}
           to="/add"
-          
         />
         <BottomNavigationAction
           label="Mes voyages"
@@ -58,23 +57,10 @@ export function BottomBar() {
 }
 
 export function MenuAppBar() {
-  const [anchorEl, setAnchorEl] = React.useState(null);
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static" sx={{ backgroundColor: 'red' }}>
+    <Box sx={{ flexGrow: 1, marginBottom: "80px" }}>
+      <AppBar position="fixed" sx={{ backgroundColor: "red" }}>
         <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2 }}
-          ></IconButton>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             TripPlanner
           </Typography>
@@ -89,24 +75,6 @@ export function MenuAppBar() {
             >
               <AccountCircle />
             </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorEl}
-              anchorOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              open={Boolean(anchorEl)}
-              onClose={handleClose}
-            >
-              <MenuItem onClick={handleClose}>Profile</MenuItem>
-              <MenuItem onClick={handleClose}>My account</MenuItem>
-            </Menu>
           </div>
         </Toolbar>
       </AppBar>
@@ -121,5 +89,23 @@ export function AppRoutes() {
       <Route path="/add" element={<AjouterVoyage />} />
       <Route path="/voyages" element={<Voyages />} />
     </Routes>
+  );
+}
+
+export function SearchBar() {
+  return (
+    <Paper
+      component="form"
+      sx={{ p: "2px 4px", display: "flex", alignItems: "center", width: 320, backgroundColor: "#f5f5f5" }}
+    >
+      <InputBase
+        sx={{ ml: 1, flex: 1 }}
+        placeholder="Rechercher"
+        inputProps={{ "aria-label": "Rechercher" }}
+      />
+      <IconButton type="button" sx={{ p: "10px" }} aria-label="search">
+        <SearchIcon />
+      </IconButton>
+    </Paper>
   );
 }

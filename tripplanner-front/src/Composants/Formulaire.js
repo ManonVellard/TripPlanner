@@ -9,13 +9,13 @@ import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 
 export default function Formulaire() {
-  // État local pour stocker les coordonnées entrées par l'utilisateur
   const [coordonnees, setCoordonnees] = useState([
     { nom: "Départ", coordonnee: "" },
     { nom: "Arrivée", coordonnee: "" },
-  ]); // État local pour garder une trace du nombre de sites ajoutés
+  ]);
   const [nombreSites, setNombreSites] = useState(0);
-  const [trajetPlusCourt, setTrajetPlusCourt] = useState([]); // État local pour stocker le trajet le plus court
+  const [trajetPlusCourt, setTrajetPlusCourt] = useState([]);
+  const [pays, setPays] = useState(null);
 
   // Fonction appelée lorsqu'un champ de formulaire est modifié
   const handleChange = (newValue, index) => {
@@ -24,9 +24,13 @@ export default function Formulaire() {
     setCoordonnees(newCoordonnees);
   };
 
-  // Fonction appelée lorsque le formulaire est soumis
+  // Fonction qui envoie le formulaire
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!pays) {
+      alert("Veuillez sélectionner un pays");
+      return;
+    }
     // Appel de la fonction calculRoute avec les coordonnées entrées par l'utilisateur
     const trajet = await calculRoute(
       coordonnees
@@ -59,71 +63,110 @@ export default function Formulaire() {
   const handleDeleteSite = () => {
     if (coordonnees.length <= 2) return; // Ne rien faire s'il n'y a que les sites "Départ" et "Arrivée"
     const updatedCoordonnees = [...coordonnees];
-    updatedCoordonnees.splice(updatedCoordonnees.length - 2, 1); // Supprime le dernier site ajouté
+    updatedCoordonnees.splice(updatedCoordonnees.length - 2, 1);
     setCoordonnees(updatedCoordonnees);
   };
 
   return (
     <div>
       <form onSubmit={handleSubmit}>
-        {coordonnees.map(({ nom, coordonnee }, index) => (
-          <div key={index}>
-            <CustomAutocomplete
-              coordonnee={coordonnees[index].coordonnee}
-              index={index}
-              nom={nom}
-              handleChange={(newValue, newIndex) =>
-                handleChange(newValue, newIndex)
-              }
+        <div
+          style={{
+            margin: "10px",
+            textAlign: "center",
+          }}
+        >
+          <h2 style={{ marginBottom: "25px" }}> - Ajouter un voyage -</h2>
+          <div
+            style={{
+              textAlign: "center",
+              margin: "10px",
+              backgroundColor: "#f5f5f5",
+            }}
+          >
+            <Autocomplete
+              id="pays"
+              options={options} // Remplacer par pays
+              getOptionLabel={(option) => option.label}
+              value={pays}
+              onChange={(event, newValue) => setPays(newValue)}
+              renderInput={(params) => (
+                <TextField {...params} label="Dans quel pays voyager ?" />
+              )}
+              sx={{ marginBottom: "10px" }}
             />
-            {index === coordonnees.length - 2 && (
-              <div
-                style={{
-                  margin: "auto",
-                  maxWidth: "fit-content",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                }}
-              >
-                <div style={{ marginBottom: "10px", marginTop: "10px" }}>
-                  <Button
-                    variant="outlined"
-                    startIcon={<AddCircleIcon />}
-                    onClick={handleAddSite}
-                    style={{ width: "290px" }}
+          </div>
+        </div>
+
+        {pays && (
+          // Affichage des départs, arrivées et sites seuleument si un pays a été sélectionné
+          <div>
+            <p
+              style={{
+                margin: "20px",
+              }}
+            >
+              Organise ton voyage
+            </p>
+            {coordonnees.map(({ nom, coordonnee }, index) => (
+              <div key={index}>
+                <CustomAutocomplete
+                  coordonnee={coordonnees[index].coordonnee}
+                  index={index}
+                  nom={nom}
+                  handleChange={(newValue, newIndex) =>
+                    handleChange(newValue, newIndex)
+                  }
+                />
+                {index === coordonnees.length - 2 && (
+                  <div
+                    style={{
+                      margin: "auto",
+                      maxWidth: "fit-content",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                    }}
                   >
-                    Ajouter un site à visiter
-                  </Button>
-                </div>
-                {coordonnees.length > 2 && (
-                  <div style={{ marginBottom: "10px" }}>
-                    <Button
-                      variant="outlined"
-                      startIcon={<RemoveCircleIcon />}
-                      onClick={handleDeleteSite}
-                      color="error"
-                      style={{ width: "290px" }}
-                    >
-                      Supprimer un site à visiter
-                    </Button>
+                    <div style={{ marginBottom: "10px", marginTop: "10px" }}>
+                      <Button
+                        variant="outlined"
+                        startIcon={<AddCircleIcon />}
+                        onClick={handleAddSite}
+                        style={{ width: "290px" }}
+                      >
+                        Ajouter un site à visiter
+                      </Button>
+                    </div>
+                    {coordonnees.length > 2 && (
+                      <div style={{ marginBottom: "10px" }}>
+                        <Button
+                          variant="outlined"
+                          startIcon={<RemoveCircleIcon />}
+                          onClick={handleDeleteSite}
+                          color="error"
+                          style={{ width: "290px" }}
+                        >
+                          Supprimer un site à visiter
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-            )}
+            ))}
+            <div style={{ textAlign: "center", marginTop: "20px" }}>
+              <Button
+                type="submit"
+                variant="contained"
+                endIcon={<DirectionsCarIcon />}
+              >
+                Calculer le trajet
+              </Button>
+            </div>
           </div>
-        ))}
-        <div style={{ textAlign: "center", marginTop: "20px" }}>
-          <Button
-            type="submit"
-            variant="contained"
-            endIcon={<DirectionsCarIcon />}
-          >
-            Calculer le trajet
-          </Button>
-        </div>
+        )}
       </form>
-      {/* Affichage du trajet le plus court */}
       {trajetPlusCourt.length > 0 && (
         <div>
           <h3>Trajet le plus court :</h3>
@@ -134,7 +177,6 @@ export default function Formulaire() {
                   ? etape.coordonnee
                   : `${etape.coordonnee} - ${etape.by}`}
                 {index < trajetPlusCourt.length - 1 && " -> "}{" "}
-                {/* Affiche la flèche seulement entre les étapes */}
               </span>
             ))}
             -&gt;{" "}
@@ -149,8 +191,8 @@ export default function Formulaire() {
   );
 }
 
+// Mise en forme du formulaire
 export function CustomAutocomplete({ coordonnee, index, nom, handleChange }) {
-  // Trouver l'option correspondante à la coordonnée
   const selectedOption = options.find((option) => option.value === coordonnee);
 
   return (
@@ -160,7 +202,7 @@ export function CustomAutocomplete({ coordonnee, index, nom, handleChange }) {
         id={`autocomplete-${index}`}
         options={options}
         getOptionLabel={(option) => option.label}
-        value={selectedOption || null} // Utilisez l'option trouvée ou null
+        value={selectedOption || null}
         onChange={(event, newValue) =>
           handleChange(newValue ? newValue.value : "", index)
         }
