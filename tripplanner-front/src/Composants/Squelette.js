@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Link } from "react-router-dom";
 import { Routes, Route } from "react-router-dom";
 import BottomNavigation from "@mui/material/BottomNavigation";
@@ -18,6 +19,7 @@ import AjouterVoyage from "../Pages/AjouterVoyage";
 import Voyages from "../Pages/Voyages";
 import InputBase from "@mui/material/InputBase";
 import SearchIcon from "@mui/icons-material/Search";
+import Profil from "../Pages/Profil";
 
 export function BottomBar() {
   const [value, setValue] = React.useState("acceuil");
@@ -72,6 +74,10 @@ export function MenuAppBar() {
               aria-controls="menu-appbar"
               aria-haspopup="true"
               color="inherit"
+              label="Profil"
+          value="profil"
+          component={Link}
+          to="/profil"
             >
               <AccountCircle />
             </IconButton>
@@ -88,20 +94,54 @@ export function AppRoutes() {
       <Route path="/" element={<Accueil />} />
       <Route path="/add" element={<AjouterVoyage />} />
       <Route path="/voyages" element={<Voyages />} />
+      <Route path="/profil" element={<Profil />} />
     </Routes>
   );
 }
 
 export function SearchBar() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [countries, setCountries] = useState([]);
+  const [filteredCountries, setFilteredCountries] = useState([]);
+
+  useEffect(() => {
+    async function fetchCountries() {
+      try {
+        const response = await axios.get("https://localhost:7109/api/pays");
+        setCountries(response.data);
+        setFilteredCountries(response.data);
+      } catch (error) {
+        console.error("Error fetching countries:", error);
+      }
+    }
+    fetchCountries();
+  }, []);
+
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
+    const filtered = countries.filter((country) =>
+      country.nom.toLowerCase().includes(event.target.value.toLowerCase())
+    );
+    setFilteredCountries(filtered);
+  };
+
   return (
     <Paper
       component="form"
-      sx={{ p: "2px 4px", display: "flex", alignItems: "center", width: 320, backgroundColor: "#f5f5f5" }}
+      sx={{
+        p: "2px 4px",
+        display: "flex",
+        alignItems: "center",
+        width: 320,
+        backgroundColor: "#f5f5f5",
+      }}
     >
       <InputBase
         sx={{ ml: 1, flex: 1 }}
         placeholder="Rechercher"
         inputProps={{ "aria-label": "Rechercher" }}
+        value={searchTerm}
+        onChange={handleSearch}
       />
       <IconButton type="button" sx={{ p: "10px" }} aria-label="search">
         <SearchIcon />

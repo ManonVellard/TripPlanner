@@ -62,10 +62,12 @@ export function calculDureePied(coorDepart, coorArrivee) {
     });
 }
 
+//Fonction qui calcule le trajet le plus court entre tous les points à visiter
+//Entrée : tableau de coordonnées
+//Sortie : tableau de coordonnées et des moyens de transport sous forme [{ coordonnee: " ", by: " " }]
 export async function calculRoute(tab) {
   const trajetPlusCourt = [{ coordonnee: tab[0], by: " " }];
   let coordonneeDepart = tab[0];
-  // Tant qu'il reste des coordonnées à visiter
   while (trajetPlusCourt.length < tab.length) {
     // Calculer les temps de trajet pour chaque coordonnée par rapport à la coordonnée de départ
     const tempsTrajetsVoiture = [];
@@ -95,16 +97,21 @@ export async function calculRoute(tab) {
     const tempsTrajets = [];
 
     for (let i = 0; i < tempsTrajetsPied.length; i++) {
-      // Comparer les valeurs et ajouter la plus petite au nouveau tableau
-      if (tempsTrajetsPied[i].temps < tempsTrajetsVoiture[i].temps) {
+      // Favoriser le trajet à pied si la durée est inférieure à 20 minutes
+      if (tempsTrajetsPied[i].temps < 20) {
         tempsTrajets.push(tempsTrajetsPied[i]);
       } else {
-        tempsTrajets.push(tempsTrajetsVoiture[i]);
+        // Sinon, comparer les temps de trajet en voiture et ajouter le plus petit au tableau
+        if (tempsTrajetsPied[i].temps < tempsTrajetsVoiture[i].temps) {
+          tempsTrajets.push(tempsTrajetsPied[i]);
+        } else {
+          tempsTrajets.push(tempsTrajetsVoiture[i]);
+        }
       }
     }
 
     // Trouver la coordonnée la plus proche (temps de trajet le plus court)
-    tempsTrajets.sort((a, b) => a.temps - b.temps); // Trier par temps de trajet croissant
+    tempsTrajets.sort((a, b) => a.temps - b.temps);
     const prochaineCoordonneeIndex = tempsTrajets[0].index;
     const prochaineCoordonneeMoyenTransport = tempsTrajets[0].by;
     const prochaineCoordonnee = {
@@ -112,37 +119,9 @@ export async function calculRoute(tab) {
       by: prochaineCoordonneeMoyenTransport,
     };
 
-    // Ajouter la coordonnée la plus proche au voyage organisé
     trajetPlusCourt.push(prochaineCoordonnee);
-
-    // Mettre à jour la coordonnée de départ pour la prochaine itération
     coordonneeDepart = prochaineCoordonnee.coordonnee;
   }
 
   return trajetPlusCourt;
-}
-
-export function comparerTableaux(tab1, tab2) {
-  // Vérifier si les tableaux ont la même longueur
-  if (tab1.length !== tab2.length) {
-    console.error("Les tableaux n'ont pas la même longueur.");
-    return;
-  }
-
-  const plusPetitesValeurs = [];
-
-  // Parcourir les tableaux et comparer les valeurs
-  for (let i = 0; i < tab1.length; i++) {
-    const valeur1 = tab1[i].temps;
-    const valeur2 = tab2[i].temps;
-
-    // Comparer les valeurs et ajouter la plus petite au nouveau tableau
-    if (valeur1 < valeur2) {
-      plusPetitesValeurs.push(valeur1);
-    } else {
-      plusPetitesValeurs.push(valeur2);
-    }
-  }
-
-  return plusPetitesValeurs;
 }
